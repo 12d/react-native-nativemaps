@@ -123,7 +123,7 @@ public class RCTAMap extends MapView implements AMap.InfoWindowAdapter,
         manager.pushEvent(this, "onMapReady", new WritableNativeMap());
 
         final RCTAMap view = this;
-
+        this.setZoomLevel(14, false);
         map.setOnMarkerClickListener(new AMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -296,7 +296,7 @@ public class RCTAMap extends MapView implements AMap.InfoWindowAdapter,
                 boundsToMove = null;
             }
         }catch (Exception e){
-
+            Log.e("xxxxxx", e.getMessage());
         }
 
     }
@@ -313,7 +313,15 @@ public class RCTAMap extends MapView implements AMap.InfoWindowAdapter,
         CameraUpdate cameraUpdate = CameraUpdateFactory.zoomTo(zoomLevel);
         map.animateCamera(cameraUpdate);
     }
+    public void setZoomLevel(float zoomLevel, boolean animated){
+        CameraUpdate cameraUpdate = CameraUpdateFactory.zoomTo(zoomLevel);
+        if(animated){
+            map.animateCamera(cameraUpdate);
+        }else{
+            map.moveCamera(cameraUpdate);
+        }
 
+    }
     //定位
 //    private void initLoc() {
 //        //初始化定位

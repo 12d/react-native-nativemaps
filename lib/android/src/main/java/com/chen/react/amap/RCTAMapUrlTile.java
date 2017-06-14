@@ -4,9 +4,11 @@ import android.content.Context;
 import android.util.Log;
 
 import com.amap.api.maps2d.AMap;
+import com.amap.api.maps2d.CameraUpdate;
+import com.amap.api.maps2d.CameraUpdateFactory;
+import com.amap.api.maps2d.model.CameraPosition;
 import com.amap.api.maps2d.model.TileOverlay;
 import com.amap.api.maps2d.model.TileOverlayOptions;
-import com.amap.api.maps2d.model.TileProvider;
 import com.amap.api.maps2d.model.UrlTileProvider;
 
 import java.net.MalformedURLException;
@@ -19,13 +21,14 @@ import java.net.URL;
 public class RCTAMapUrlTile extends RCTAMapFeature {
     private TileOverlay tileOverlay;
     private TileOverlayOptions tileOverlayOptions;
-    private RCTAMapUrlTileProvider tileProvider;
     private String urlTemplate;
     private float zIndex;
-    class RCTAMapUrlTileProvider extends UrlTileProvider
+    private  RCTMapUrlTileProvider tileProvider;
+
+    class RCTMapUrlTileProvider extends UrlTileProvider
     {
         private String urlTemplate;
-        public RCTAMapUrlTileProvider(int width, int height, String urlTemplate) {
+        public RCTMapUrlTileProvider(int width, int height, String urlTemplate) {
             super(width, height);
             this.urlTemplate = urlTemplate;
         }
@@ -37,6 +40,7 @@ public class RCTAMapUrlTile extends RCTAMapFeature {
                     .replace("{y}", Integer.toString(y))
                     .replace("{z}", Integer.toString(zoom));
             URL url = null;
+            Log.i("xxxxx",s);
             try {
                 url = new URL(s);
             } catch (MalformedURLException e) {
@@ -49,12 +53,25 @@ public class RCTAMapUrlTile extends RCTAMapFeature {
             this.urlTemplate = urlTemplate;
         }
     }
+    private TileOverlayOptions createTileOverlayOptions() {
+        TileOverlayOptions options = new TileOverlayOptions();
+        options.zIndex(zIndex);
+        this.tileProvider = new RCTMapUrlTileProvider(256, 256, this.urlTemplate);
+        options.tileProvider(this.tileProvider);
 
+        return options;
+    }
+    public TileOverlayOptions getTileOverlayOptions() {
+        if (tileOverlayOptions == null) {
+            tileOverlayOptions = createTileOverlayOptions();
+        }
+        return tileOverlayOptions;
+    }
     public RCTAMapUrlTile(Context context) {
         super(context);
+
     }
     public void setUrlTemplate(String urlTemplate){
-        Log.i("xxxxxx", urlTemplate);
         this.urlTemplate = urlTemplate;
         if (tileProvider != null) {
             tileProvider.setUrlTemplate(urlTemplate);
@@ -63,41 +80,25 @@ public class RCTAMapUrlTile extends RCTAMapFeature {
             tileOverlay.clearTileCache();
         }
     }
-    public void setZIndex(float zIndex){
-
+    public void setZIndex(float zIndex) {
+        this.zIndex = zIndex;
+        if (tileOverlay != null) {
+            tileOverlay.setZIndex(zIndex);
+        }
     }
     @Override
     public void addToMap(AMap amap){
         Log.i("xxxxx","add to map");
+        this.tileOverlay = amap.addTileOverlay(getTileOverlayOptions());
 
 
-          final String url = this.urlTemplate;
-//        final String url="http://developer.baidu.com/map/jsdemo/demo/tiles/%d/tile/%d_%d.png";
+        //hack to 初始化的时候覆盖物不显示
+        CameraPosition cameraPosition = amap.getCameraPosition();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.zoomBy(+1);
+        amap.moveCamera(cameraUpdate);
+        CameraUpdate cameraUpdate2 = CameraUpdateFactory.zoomBy(-1);
+        amap.moveCamera(cameraUpdate2);
 
-        TileProvider tileProvider = new UrlTileProvider(256, 256) {
-            @Override
-            public synchronized URL getTileUrl(int x, int y, int zoom) {
-                try {
-                    Log.i("xxxxx",String.format(url, x, y, zoom));
-//                    return new URL(String.format(url, 16,x, y));
-                    return new URL(String.format(url, x, y, zoom));
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
-        if (tileProvider != null) {
-            tileOverlay = amap.addTileOverlay(new TileOverlayOptions()
-                    .tileProvider(tileProvider)
-                    .diskCacheEnabled(true)
-                    .diskCacheDir("/storage/emulated/0/amap/cache")
-                    .diskCacheSize(100000)
-                    .memoryCacheEnabled(true)
-                    .memCacheSize(100000)
-                    );
-            tileOverlay.setVisible(true);
-        }
     }
     @Override
     public void removeFromMap(AMap amap){
