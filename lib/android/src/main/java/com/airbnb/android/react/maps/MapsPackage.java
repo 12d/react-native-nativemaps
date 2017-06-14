@@ -1,8 +1,12 @@
 package com.airbnb.android.react.maps;
 
 import android.app.Activity;
+import android.util.Log;
 
+import com.chen.react.amap.RCTAMapCircleManager;
 import com.chen.react.amap.RCTAMapManager;
+import com.chen.react.amap.RCTAMapMarkerManager;
+import com.chen.react.amap.RCTAMapUrlTileManager;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -44,6 +48,12 @@ public class MapsPackage implements ReactPackage {
 
         //高德地图
         RCTAMapManager amapManager = new RCTAMapManager(reactContext);
+        RCTAMapCircleManager amapCircleManager = new RCTAMapCircleManager(reactContext);
+        RCTAMapMarkerManager amapMarkerManager = new RCTAMapMarkerManager(reactContext);
+
+
+        Log.d("xxxxx","asdfasdfasdf");
+        RCTAMapUrlTileManager aMapUrlTitleManager = new RCTAMapUrlTileManager(reactContext);
 
         return Arrays.<ViewManager>asList(
                 calloutManager,
@@ -54,7 +64,10 @@ public class MapsPackage implements ReactPackage {
                 mapManager,
                 mapLiteManager,
                 tileManager,
-                amapManager
+                amapManager,
+                amapCircleManager,
+                amapMarkerManager,
+                aMapUrlTitleManager
 
         );
 
